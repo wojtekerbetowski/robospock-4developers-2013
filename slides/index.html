@@ -121,7 +121,7 @@
     </section>
     <section>
         <h2>Sample test</h2>
-        <div>[code]</div>
+        <br/>
         <div>
             <pre><code>public class ScanExampleTest
         extends ActivityInstrumentationTestCase2&lt;MyScanActivity&gt; {
@@ -364,23 +364,49 @@ thrown(RuntimeException)</code></pre>
         <h2>JUnit -&gt; Spock</h2>
         <div>Exception handling - detailed</div>
         <div class="left_compare">
-<pre><code class="java">@Test(expect=RuntimeException.class)
-    public void myTest() {
+<pre><code class="java">@Test
+public void myTest() {
 
+  try {
     thisThrowsSomething();
-    }</code></pre>
+    fail();
+
+  } catch(RuntimeException e) {
+    assertContains(
+      e.getMessage(), 'No such user')
+  }
+}</code></pre>
         </div>
         <div class="right_compare">
 <pre><code class="java">when:
-    thisThrowsSomething()
+  thisThrowsSomething()
 
-    then:
-    thrown(RuntimeException)</code></pre>
+then:
+  def e = thrown(RuntimeException)
+  e.message =~ 'No such user'
+</code></pre>
         </div>
     </section>
     <section>
         <h2>JUnit -&gt; Spock</h2>
         <div>Groovy</div>
+        <div>
+<pre><code class="java">then:
+    userStorage.getAllUsers().find{it.id == id}?.name == "Szymon"
+</code></pre>
+        </div>
+        <br/>
+        <div>
+<pre class="fragment"><code>Condition not satisfied:
+
+userRepository.findAll().find{it.name == 'Szymon'}?.age == 10
+|              |         |                          |   |
+|              |         null                       |   false
+|              [A$User(Piotr, 12)]                  null
+A$UserRepository@22d3d11f
+&lt;Click to see difference&gt;
+</code></pre>
+            </div>
     </section>
 </section>
 <section>
@@ -449,7 +475,7 @@ thrown(RuntimeException)</code></pre>
     </section>
     <section>
         <h2>Switch class definition</h2>
-        <div>[classloader code]</div>
+        <div></div>
     </section>
     <section>
         <h2>Implementing classes</h2>
@@ -461,14 +487,30 @@ thrown(RuntimeException)</code></pre>
         <div>
             <br>
         </div>
-        <div>[code Robolectic test JUnit runner]</div>
+        <div>
+            <pre><code class="java">@RunWith(RobolectricTestRunner.class)
+public class MyActivityTest {
+    // ..
+}</code></pre>
+        </div>
     </section>
     <section>
         <h2>Do we need test runner?</h2>
         <div>
             <br>
         </div>
-        <div>[code String x = getMyString()]</div>
+        <div><pre><code>public class MyTest {
+  public void test() {
+    Activity x = // Activity on the left loaded on MyTest bootstrap
+        getMyActivity(); // but the method returned shadowed activity
+  }
+}</code></pre>
+        </div>
+        <div>
+            <pre class="fragment"><code>java.lang.ClassCastException: android.app.Activity
+  cannot be cast to android.app.Activity
+        </code></pre>
+        </div>
     </section>
 </section>
 <section>
@@ -477,23 +519,24 @@ thrown(RuntimeException)</code></pre>
         <div>
             <br>
         </div>
-        <div>[code extends RoboSpecification]</div>
+        <div><pre><code>class MyActivitySpec extends RoboSpecification {...}
+        </code></pre>
+        </div>
     </section>
     <section>
         <h2>Using both</h2>
-        <div>Robolectric:</div>
-        <div>
+        <br/>
+        <div style="float: left">
+            <div style="font-weight: bold;">Robolectric</div>
             <ul>
                 <li>classloader</li>
                 <li>shadows</li>
                 <li>DB support</li>
             </ul>
-            <div style="text-align: left;">
-                <br>
-            </div>
-            <div style="text-align: center;">Spockframework:</div>
+
         </div>
-        <div style="text-align: center;">
+        <div style="float: right">
+            <div style="text-align: center; font-weight: bold">Spockframework</div>
             <ul>
                 <li>runner</li>
                 <li>extension points</li>
@@ -519,7 +562,8 @@ thrown(RuntimeException)</code></pre>
         <div>The MIT License<br>
         </div>
         <div>Developed by (mostly) PivotalLabs</div>
-        <div>Stored on GitHub</div>
+        <br/>
+        <div>https://github.com/pivotal/robolectric</div>
     </section>
     <section>
         <h2>Thank you Open Source!</h2>
@@ -532,6 +576,8 @@ thrown(RuntimeException)</code></pre>
         </div>
         <div>Apache 2.0</div>
         <div>Developed (mostly) by&nbsp;Peter Niederwieser</div>
+        <br/>
+        <div>https://code.google.com/p/spock/</div>
     </section>
 </section>
 <section>
@@ -546,21 +592,70 @@ thrown(RuntimeException)</code></pre>
         <div>
             <br>
         </div>
-        <div>[code]</div>
+        <div>
+            <pre><code class="java">def "should throw SQL Constraint exception on existing primary key"() {
+  given:
+    def dao = databaseHelper.getDao(DatabaseObject)
+
+  and: 'stored object'
+    def dbObject = new DatabaseObject("test", 4, 1)
+    dao.create(dbObject)
+
+  when: 'duplication'
+    dao.create(dbObject)
+
+  then:
+    def exception = thrown(RuntimeException)
+    exception.message =~ "SQLITE_CONSTRAINT"
+    exception.cause.class == SQLException
+}</code></pre>
+        </div>
     </section>
     <section>
         <h2>RoboGuice</h2>
         <div>
-            <br>
+            <pre><code>class TaskActivityTestGroovy extends RoboSpecification {
+
+  @Inject WebInterface webInterface
+
+  def setup() {
+    inject {
+      install(TestTaskExecutorModule)
+      bind(WebInterface).toInstance(Mock(WebInterface))
+    }
+  }
+
+  def "should load text from async task"() {
+    given:
+      def taskActivity = new TaskActivity()
+
+    when:
+      taskActivity.onCreate(null)
+
+    then:
+      taskActivity.asyncText.text == "WebText"
+  }
+}</code></pre>
         </div>
-        <div>[code]</div>
     </section>
     <section>
         <h2>Custom shadows</h2>
         <div>
-            <br>
+            <pre><code>@UseShadows(MyActivityManagerShadow)
+class TaskActivityTestGroovy extends RoboSpecification {
+
+  def "should load text from async task"() {
+    given:
+      def taskActivity = new TaskActivity()
+
+    when:
+      taskActivity.onCreate(null)
+
+    then:
+      taskActivity.asyncText.text == "WebText"
+  }
+}</code></pre>
         </div>
-        <div>[code]</div>
     </section>
     <section>
         <h2>Why is it all so important?</h2>
