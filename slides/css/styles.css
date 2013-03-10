@@ -1,0 +1,17 @@
+.left_compare {
+    float: left;
+    width: 50%
+}
+
+.left_compare pre {
+    width: 95%;
+}
+
+.right_compare {
+    float: right;
+    width: 50%
+}
+
+.right_compare pre {
+    width: 95%;
+}
