@@ -15,3 +15,8 @@
 .right_compare pre {
     width: 95%;
 }
+
+body {
+    background: url('../img/4developers_background.png');
+    background-size: cover;
+}
